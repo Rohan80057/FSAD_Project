@@ -151,19 +151,8 @@ const DotMatrix = ({
             float frequency = 5.0;
             float show_offset = random(st2);
             
-            // MATRIX RAIN TOP-TO-BOTTOM LOGIC
-            // Random offset per column to create independent "streams"
-            float column_random = random(vec2(st2.x, 0.0));
-            float speed_multiplier = 2.0 + column_random * 2.0; // Varying speeds
-            
-            // 0.1 scale for y creates larger waves. - u_time moves the wave "down" (assuming standard coordinates)
-            // Adding column_random staggers the waves
-            float vertical_wave = sin(st2.y * 0.1 - u_time * speed_multiplier + column_random * 10.0);
-            
-            // Normalize sine (-1 to 1) to (0 to 1) and shift baseline
-            float smooth_opacity = 0.2 + 0.8 * (vertical_wave * 0.5 + 0.5);
-            
-            opacity *= smooth_opacity;
+            float rand = random(st2 * floor((u_time / frequency) + show_offset + frequency));
+            opacity *= u_opacities[int(rand * 10.0)];
             
             opacity *= 1.0 - step(u_dot_size / u_total_size, fract(st.x / u_total_size));
             opacity *= 1.0 - step(u_dot_size / u_total_size, fract(st.y / u_total_size));
