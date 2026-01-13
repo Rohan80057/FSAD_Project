@@ -1,0 +1,108 @@
+############################
+# OS / Editor garbage
+############################
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+.idea/
+.vscode/
+*.log
+
+############################
+# Java / Backend
+############################
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Build directories
+/target/
+/build/
+/out/
+
+# Maven / Gradle
+.mvn/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# JVM crash logs
+hs_err_pid*
+
+############################
+# Spring / Java config
+############################
+application-*.yml
+application-*.properties
+.env
+.env.*
+
+############################
+# React / Frontend
+############################
+node_modules/
+dist/
+build/
+.cache/
+.next/
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+############################
+# Environment variables
+############################
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+############################
+# Database / SQL
+############################
+# Local DB files
+*.db
+*.sqlite
+*.sqlite3
+
+# Dumps & backups
+*.sql
+*.dump
+*.bak
+
+# Optional: keep schema but ignore data
+!schema.sql
+!migrations/
+
+############################
+# Docker
+############################
+.dockerignore
+docker-compose.override.yml
+
+############################
+# Testing / Coverage
+############################
+coverage/
+reports/
+test-results/
+
+############################
+# Logs
+############################
+logs/
+*.log
+
+############################
+# Secrets (because humans forget)
+############################
+*.pem
+*.key
+*.crt
+secrets/
