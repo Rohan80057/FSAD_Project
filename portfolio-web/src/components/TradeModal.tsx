@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { X, Search, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
-import { executeTrade, getMarketQuote } from '@/lib/api';
+import { searchTicker, getMarketQuote, executeTrade } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
+import { Search, X, Loader2 } from 'lucide-react';
 
 interface TradeModalProps {
     isOpen: boolean;
@@ -12,138 +12,167 @@ interface TradeModalProps {
 export default function TradeModal({ isOpen, onClose, onSuccess }: TradeModalProps) {
     const [symbol, setSymbol] = useState('');
     const [quantity, setQuantity] = useState('');
-    const [quote, setQuote] = useState<number | null>(null);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [quote, setQuote] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-    const [quoteLoading, setQuoteLoading] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
     const [error, setError] = useState('');
 
     if (!isOpen) return null;
 
-    const handleGetQuote = async () => {
-        if (!symbol.trim()) return;
-        setQuoteLoading(true);
+    const handleSearch = async (query: string) => {
+        setSymbol(query);
+        setError('');
+        if (query.length < 2) { setSearchResults([]); return; }
+        setSearchLoading(true);
+        try {
+            const result = await searchTicker(query);
+            setSearchResults(result?.symbol ? [result] : []);
+        } catch { setSearchResults([]); }
+        setSearchLoading(false);
+    };
+
+    const selectSymbol = async (sym: string) => {
+        setSymbol(sym);
+        setSearchResults([]);
         setError('');
         try {
-            const data = await getMarketQuote(symbol.trim().toUpperCase());
-            setQuote(data.price);
-        } catch (err: any) {
-            setError(err.message || 'Failed to get quote');
-            setQuote(null);
-        } finally {
-            setQuoteLoading(false);
+            const q = await getMarketQuote(sym);
+            setQuote(q);
+        } catch {
+            setError('Could not fetch quote');
         }
     };
 
     const handleTrade = async (type: 'BUY' | 'SELL') => {
-        if (!symbol.trim() || !quantity || parseInt(quantity) < 1) {
-            setError('Enter a valid symbol and quantity');
-            return;
-        }
+        if (!symbol || !quantity) return;
         setLoading(true);
         setError('');
         try {
-            await executeTrade({
-                symbol: symbol.trim().toUpperCase(),
-                quantity: parseInt(quantity),
-                type,
-            });
+            await executeTrade({ symbol, quantity: Number(quantity), type });
             onSuccess();
-            onClose();
-            setSymbol('');
-            setQuantity('');
-            setQuote(null);
-        } catch (err: any) {
-            setError(err.message || 'Trade failed');
-        } finally {
-            setLoading(false);
+            handleClose();
+        } catch (e: any) {
+            setError(e.message || 'Trade failed');
         }
+        setLoading(false);
     };
 
-    const estimatedValue = quote && quantity ? quote * parseInt(quantity) : null;
+    const handleClose = () => {
+        setSymbol('');
+        setQuantity('');
+        setQuote(null);
+        setSearchResults([]);
+        setError('');
+        onClose();
+    };
+
+    const estimatedValue = quote?.price && quantity ? quote.price * Number(quantity) : 0;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative glass rounded-2xl p-6 w-full max-w-md animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/40" onClick={handleClose} />
+
+            {/* Modal */}
+            <div className="card relative w-full max-w-md p-6 shadow-xl animate-fadeIn">
+                {/* Header */}
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold">Execute Trade</h2>
-                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] transition-colors">
-                        <X className="w-5 h-5" />
+                    <h2 className="text-lg font-bold text-[var(--color-foreground)]">Execute Trade</h2>
+                    <button onClick={handleClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center">
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                {/* Symbol Input */}
-                <div className="mb-4">
-                    <label className="text-sm text-[var(--color-muted-foreground)] mb-1.5 block">Symbol</label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={symbol}
-                            onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                            placeholder="e.g. RELIANCE.NS"
-                            className="flex-1 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--color-accent)] transition-colors"
-                        />
-                        <button
-                            onClick={handleGetQuote}
-                            disabled={quoteLoading}
-                            className="px-4 py-2.5 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-border)] transition-colors text-sm"
-                        >
-                            {quoteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                        </button>
+                {/* Symbol search */}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-[var(--color-muted-foreground)] mb-1.5">Symbol</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted-foreground)]" />
+                            <input
+                                className="input pl-9"
+                                placeholder="Search RELIANCE.NS, TCS.NS..."
+                                value={symbol}
+                                onChange={(e) => handleSearch(e.target.value)}
+                            />
+                            {searchLoading && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted-foreground)] animate-spin" />
+                            )}
+                        </div>
+                        {/* Search dropdown */}
+                        {searchResults.length > 0 && (
+                            <div className="card mt-1 max-h-40 overflow-y-auto shadow-lg">
+                                {searchResults.map((r: any) => (
+                                    <button
+                                        key={r.symbol}
+                                        onClick={() => selectSymbol(r.symbol)}
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--color-muted)] transition-colors flex items-center justify-between"
+                                    >
+                                        <span className="font-medium">{r.symbol}</span>
+                                        <span className="text-xs text-[var(--color-muted-foreground)] truncate ml-2">{r.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    {quote != null && (
-                        <p className="text-sm text-[var(--color-accent)] mt-2 font-medium">
-                            Current Price: {formatCurrency(quote)}
+
+                    {/* Quote display */}
+                    {quote && (
+                        <div className="bg-[var(--color-muted)] rounded-[var(--radius)] p-3 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold">{quote.symbol || symbol}</p>
+                                <p className="text-xs text-[var(--color-muted-foreground)]">{quote.name || 'Stock'}</p>
+                            </div>
+                            <p className="text-lg font-bold">{formatCurrency(quote.price)}</p>
+                        </div>
+                    )}
+
+                    {/* Quantity */}
+                    <div>
+                        <label className="block text-xs font-medium text-[var(--color-muted-foreground)] mb-1.5">Quantity</label>
+                        <input
+                            className="input"
+                            type="number"
+                            min="1"
+                            placeholder="100"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Estimated value */}
+                    {estimatedValue > 0 && (
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-[var(--color-muted-foreground)]">Estimated Value</span>
+                            <span className="font-semibold">{formatCurrency(estimatedValue)}</span>
+                        </div>
+                    )}
+
+                    {/* Error */}
+                    {error && (
+                        <p className="text-sm text-[var(--color-destructive)] bg-[var(--color-destructive-light)] p-2 rounded-[var(--radius)]">
+                            {error}
                         </p>
                     )}
-                </div>
 
-                {/* Quantity Input */}
-                <div className="mb-4">
-                    <label className="text-sm text-[var(--color-muted-foreground)] mb-1.5 block">Quantity</label>
-                    <input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        placeholder="Number of shares"
-                        min="1"
-                        className="w-full bg-[var(--color-muted)] border border-[var(--color-border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--color-accent)] transition-colors"
-                    />
-                </div>
-
-                {/* Estimated Value */}
-                {estimatedValue != null && (
-                    <div className="mb-6 p-3 rounded-lg bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20">
-                        <p className="text-sm text-[var(--color-muted-foreground)]">Estimated Value</p>
-                        <p className="text-lg font-bold text-[var(--color-accent)]">{formatCurrency(estimatedValue)}</p>
+                    {/* Actions */}
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            onClick={() => handleTrade('BUY')}
+                            disabled={loading || !symbol || !quantity}
+                            className="btn flex-1 bg-[var(--color-success)] text-white disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buy'}
+                        </button>
+                        <button
+                            onClick={() => handleTrade('SELL')}
+                            disabled={loading || !symbol || !quantity}
+                            className="btn flex-1 bg-[var(--color-destructive)] text-white disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sell'}
+                        </button>
                     </div>
-                )}
-
-                {/* Error */}
-                {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/20">
-                        <p className="text-sm text-[var(--color-danger)]">{error}</p>
-                    </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={() => handleTrade('BUY')}
-                        disabled={loading}
-                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--color-success)] text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50"
-                    >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
-                        BUY
-                    </button>
-                    <button
-                        onClick={() => handleTrade('SELL')}
-                        disabled={loading}
-                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--color-danger)] text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50"
-                    >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownRight className="w-4 h-4" />}
-                        SELL
-                    </button>
                 </div>
             </div>
         </div>

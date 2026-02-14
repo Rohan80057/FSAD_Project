@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface SummaryCardProps {
@@ -8,42 +7,34 @@ interface SummaryCardProps {
     change?: string;
     changeValue?: number;
     icon?: ReactNode;
-    className?: string;
 }
 
-export default function SummaryCard({ label, value, change, changeValue, icon, className }: SummaryCardProps) {
-    const isPositive = changeValue != null && changeValue > 0;
-    const isNegative = changeValue != null && changeValue < 0;
+export default function SummaryCard({ label, value, change, changeValue, icon }: SummaryCardProps) {
+    const isPositive = (changeValue ?? 0) >= 0;
 
     return (
-        <div
-            className={cn(
-                'glass rounded-xl p-5 animate-fadeIn transition-all duration-300 hover:scale-[1.02] hover:border-[var(--color-accent)]/30',
-                className
-            )}
-        >
-            <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-[var(--color-muted-foreground)]">{label}</span>
-                {icon && <div className="text-[var(--color-muted-foreground)]">{icon}</div>}
-            </div>
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
-            {change && (
-                <div className="flex items-center gap-1 mt-2">
-                    {isPositive && <TrendingUp className="w-3.5 h-3.5 text-[var(--color-success)]" />}
-                    {isNegative && <TrendingDown className="w-3.5 h-3.5 text-[var(--color-danger)]" />}
-                    {!isPositive && !isNegative && <Minus className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />}
-                    <span
-                        className={cn(
-                            'text-sm font-medium',
-                            isPositive && 'text-[var(--color-success)]',
-                            isNegative && 'text-[var(--color-danger)]',
-                            !isPositive && !isNegative && 'text-[var(--color-muted-foreground)]'
-                        )}
-                    >
-                        {change}
-                    </span>
+        <div className="card p-4 transition-shadow duration-150">
+            <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-1">
+                    <p className="text-xs font-medium text-[var(--color-muted-foreground)]">{label}</p>
+                    <p className="text-xl font-bold tracking-tight text-[var(--color-foreground)]">{value}</p>
+                    {change && (
+                        <span
+                            className={cn(
+                                'badge text-xs mt-1',
+                                isPositive ? 'badge-success' : 'badge-destructive'
+                            )}
+                        >
+                            {isPositive ? '↑' : '↓'} {change}
+                        </span>
+                    )}
                 </div>
-            )}
+                {icon && (
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--color-muted)]">
+                        <span className="text-[var(--color-muted-foreground)]">{icon}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
