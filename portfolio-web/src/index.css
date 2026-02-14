@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+    --color-background: #09090b;
+    --color-foreground: #fafafa;
+    --color-card: #18181b;
+    --color-card-foreground: #fafafa;
+    --color-border: #27272a;
+    --color-muted: #27272a;
+    --color-muted-foreground: #a1a1aa;
+    --color-accent: #6366f1;
+    --color-accent-foreground: #fafafa;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+
+    --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --radius: 0.75rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    color-scheme: dark;
+}
+
+body {
+    font-family: var(--font-family-sans);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+#root {
+    min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 20px 4px rgba(99, 102, 241, 0.15);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slideIn {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Utility */
+.glass {
+    background: rgba(24, 24, 27, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+}
