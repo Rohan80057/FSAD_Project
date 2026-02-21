@@ -7,6 +7,7 @@ import com.apex.portfolio.model.User;
 import com.apex.portfolio.repository.HoldingRepository;
 import com.apex.portfolio.repository.TransactionRepository;
 import com.apex.portfolio.repository.UserRepository;
+import com.apex.portfolio.service.SnapshotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class TradeService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final StockPriceService stockPriceService;
+    private final SnapshotService snapshotService;
 
     @Transactional
     public void executeTrade(String userId, TradeRequest request) {
@@ -120,5 +122,11 @@ public class TradeService {
                 .timestamp(LocalDateTime.now())
                 .build();
         transactionRepository.save(transaction);
+
+        // Capture snapshot so portfolio chart updates immediately
+        try {
+            snapshotService.captureSnapshotsNow();
+        } catch (Exception ignored) {
+        }
     }
 }

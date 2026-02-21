@@ -20,7 +20,6 @@ com\apex\portfolio\model\PortfolioSnapshot$PortfolioSnapshotBuilder.class
 com\apex\portfolio\controller\AccountController.class
 com\apex\portfolio\dto\PortfolioDTO$PortfolioDTOBuilder.class
 com\apex\portfolio\model\Account$AccountBuilder.class
-com\apex\portfolio\service\MockStockPriceService.class
 com\apex\portfolio\config\CorsConfig.class
 com\apex\portfolio\dto\PortfolioDTO.class
 com\apex\portfolio\model\Transaction.class
@@ -32,7 +31,6 @@ com\apex\portfolio\model\Holding$HoldingBuilder.class
 com\apex\portfolio\service\TradeService.class
 com\apex\portfolio\repository\PortfolioSnapshotRepository.class
 com\apex\portfolio\model\User$UserBuilder.class
-com\apex\portfolio\controller\WebController.class
 com\apex\portfolio\model\Transaction$TransactionBuilder.class
 com\apex\portfolio\model\User.class
 com\apex\portfolio\controller\FundsController.class
