@@ -104,27 +104,25 @@ export function Signup() {
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                authService.setDevMode(true);
-                toast.success('Development Mode Enabled');
-                navigate('/portfolio');
-              }}
-              className="w-full px-6 py-4 border border-border hover:bg-muted transition-colors"
-            >
-              Skip to Dev Mode (Local Testing)
-            </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
               <Link to="/login" className="text-foreground hover:underline">
                 Sign in
               </Link>
             </p>
+            <button
+              onClick={() => {
+                authService.setDevMode(true);
+                toast.success('Development Mode Enabled');
+                navigate('/portfolio');
+              }}
+              className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            >
+              Dev Mode →
+            </button>
           </div>
         </div>
       </div>

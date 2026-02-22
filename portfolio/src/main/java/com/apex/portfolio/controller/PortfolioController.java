@@ -22,6 +22,11 @@ public class PortfolioController {
         // But for production-like setup, we expect JWT.
         String userId = jwt != null ? jwt.getSubject() : "test-user-id";
 
-        return portfolioService.getPortfolio(userId);
+        try {
+            return portfolioService.getPortfolio(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error: " + e.getMessage() + " | Cause: " + e.getCause());
+        }
     }
 }

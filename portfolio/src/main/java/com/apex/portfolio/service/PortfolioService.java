@@ -30,6 +30,10 @@ public class PortfolioService {
                         .realizedPnL(BigDecimal.ZERO)
                         .build());
 
+        // Null-safety: Hibernate may load null from DB even with @Builder.Default
+        BigDecimal cashBalance = user.getCashBalance() != null ? user.getCashBalance() : BigDecimal.ZERO;
+        BigDecimal realizedPnL = user.getRealizedPnL() != null ? user.getRealizedPnL() : BigDecimal.ZERO;
+
         List<Holding> holdings = holdingRepository.findByUserId(userId);
 
         BigDecimal totalValue = BigDecimal.ZERO;
@@ -99,9 +103,9 @@ public class PortfolioService {
                 .totalPnL(totalPnL)
                 .totalPnLPercentage(totalPnLPercent)
                 .dayPnL(BigDecimal.ZERO)
-                .cashBalance(user.getCashBalance())
-                .realizedPnL(user.getRealizedPnL())
-                .netWorth(totalValue.add(user.getCashBalance()))
+                .cashBalance(cashBalance)
+                .realizedPnL(realizedPnL)
+                .netWorth(totalValue.add(cashBalance))
                 .topGainer(topGainer)
                 .topLoser(topLoser)
                 .build();
